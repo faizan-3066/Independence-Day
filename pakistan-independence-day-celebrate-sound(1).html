@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>14 August Mubarak — Pakistan Independence Day</title>
+<meta name="description" content="A cinematic tribute to Pakistan's Independence Day — 14 August.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800;900&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-night:#03130a;
+    --green-950:#02200f;
+    --green-900:#01411c;
+    --green-800:#0a5228;
+    --green-700:#0e6b34;
+    --green-600:#178a44;
+    --green-glow:#2fd571;
+    --gold:#d9b24c;
+    --white:#f8faf3;
+    --white-dim:rgba(248,250,243,.72);
+    --ink:#04170b;
+    --font-d:'Cinzel',serif;
+    --font-b:'Poppins',sans-serif;
+    --ease:cubic-bezier(.22,1,.36,1);
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    font-family:var(--font-b);
+    background:var(--bg-night);
+    color:var(--white);
+    overflow-x:hidden;
+    line-height:1.5;
+  }
+  img,svg{display:block;max-width:100%;}
+  a{color:inherit;text-decoration:none;}
+  ::selection{background:var(--green-glow);color:var(--ink);}
+
+  h1,h2,h3{font-family:var(--font-d);font-weight:700;letter-spacing:.02em;}
+
+  /* ===== canvases ===== */
+  #ambientCanvas{position:fixed;inset:0;width:100%;height:100%;z-index:1;pointer-events:none;}
+  #confettiCanvas{position:fixed;inset:0;width:100%;height:100%;z-index:9999;pointer-events:none;}
+
+  /* ===== preloader ===== */
+  #preloader{
+    position:fixed;inset:0;z-index:10000;background:radial-gradient(ellipse at center,var(--green-950) 0%,#010b05 75%);
+    display:flex;align-items:center;justify-content:center;flex-direction:column;gap:18px;
+    transition:opacity .9s var(--ease), visibility .9s var(--ease);
+  }
+  #preloader.hide{opacity:0;visibility:hidden;pointer-events:none;}
+  .pre-flag{width:min(38vw,150px);aspect-ratio:3/2;position:relative;overflow:hidden;border-radius:3px;
+    box-shadow:0 0 40px rgba(47,213,113,.35);}
+  .pre-flag .fill{position:absolute;inset:0;background:linear-gradient(90deg,var(--white) 0 25%,var(--green-800) 25% 100%);
+    transform:translateX(-100%);animation:unfurl 1.4s var(--ease) forwards .2s;}
+  @keyframes unfurl{to{transform:translateX(0);}}
+  .pre-label{font-family:var(--font-d);letter-spacing:.35em;font-size:.72rem;color:var(--white-dim);
+    text-transform:uppercase;opacity:0;animation:fadeUp .8s var(--ease) forwards 1.3s;}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+  /* ===== nav ===== */
+  header{position:fixed;top:0;left:0;right:0;z-index:9500;display:flex;align-items:center;justify-content:space-between;
+    padding:18px clamp(18px,5vw,56px);transition:background .4s var(--ease),padding .4s var(--ease),box-shadow .4s var(--ease);}
+  header.scrolled{background:rgba(2,20,10,.78);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+    padding-top:12px;padding-bottom:12px;box-shadow:0 8px 30px rgba(0,0,0,.35);}
+  .brand{display:flex;align-items:center;gap:10px;font-family:var(--font-d);font-weight:700;letter-spacing:.12em;font-size:1rem;}
+  .brand .star{color:var(--gold);font-size:1.1rem;filter:drop-shadow(0 0 6px rgba(217,178,76,.7));}
+  nav ul{list-style:none;display:flex;gap:clamp(18px,3vw,38px);}
+  nav a{font-size:.82rem;letter-spacing:.08em;text-transform:uppercase;position:relative;padding-bottom:4px;opacity:.88;}
+  nav a::after{content:'';position:absolute;left:0;bottom:0;width:0;height:1px;background:var(--gold);transition:width .35s var(--ease);}
+  nav a:hover{opacity:1;}
+  nav a:hover::after{width:100%;}
+  #navToggle{display:none;flex-direction:column;gap:5px;cursor:pointer;z-index:600;background:none;border:none;}
+  #navToggle span{width:24px;height:2px;background:var(--white);border-radius:2px;transition:.3s var(--ease);}
+  nav{position:relative;z-index:9600;}
+  nav a{cursor:pointer;}
+  section[id]{scroll-margin-top:88px;}
+  body.menu-open{overflow:hidden;}
+  #soundToggle{position:fixed;right:18px;bottom:18px;z-index:9700;width:50px;height:50px;border-radius:50%;border:1px solid rgba(217,178,76,.75);background:rgba(2,20,10,.9);color:var(--white);display:flex;align-items:center;justify-content:center;font-size:1.15rem;cursor:pointer;box-shadow:0 8px 25px rgba(0,0,0,.4);backdrop-filter:blur(10px);}
+  #songPicker{display:none;}
+
+  /* ===== buttons ===== */
+  .btn{
+    display:inline-flex;align-items:center;gap:10px;font-family:var(--font-b);font-weight:600;font-size:.92rem;
+    letter-spacing:.03em;padding:15px 34px;border-radius:100px;border:1px solid var(--gold);color:var(--ink);
+    background:linear-gradient(135deg,#f4e2a0,var(--gold) 60%,#b98f2e);cursor:pointer;position:relative;overflow:hidden;
+    transition:transform .35s var(--ease),box-shadow .35s var(--ease);
+  }
+  .btn::before{content:'';position:absolute;inset:0;background:linear-gradient(120deg,transparent,rgba(255,255,255,.55),transparent);
+    transform:translateX(-120%);transition:transform .6s var(--ease);}
+  .btn:hover{transform:translateY(-3px);box-shadow:0 14px 30px -8px rgba(217,178,76,.55);}
+  .btn:hover::before{transform:translateX(120%);}
+  .btn.ghost{background:transparent;color:var(--white);border:1px solid rgba(248,250,243,.4);}
+  .btn.ghost:hover{border-color:var(--white);box-shadow:0 10px 26px -10px rgba(255,255,255,.25);}
+
+  section{position:relative;z-index:2;}
+
+  /* ===== hero ===== */
+  #hero{min-height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
+    padding:120px 20px 60px;overflow:hidden;background:
+      radial-gradient(ellipse 70% 55% at 50% 12%, rgba(47,213,113,.18), transparent 60%),
+      linear-gradient(180deg,#03130a 0%,#02200f 55%,#01150a 100%);}
+  .sky-moon{position:absolute;top:16px;left:50%;transform:translateX(-50%);width:min(26vw,110px);opacity:.85;
+    pointer-events:none;filter:drop-shadow(0 0 24px rgba(248,250,243,.4));animation:pulseGlow 5s ease-in-out infinite;}
+  @keyframes pulseGlow{0%,100%{filter:drop-shadow(0 0 24px rgba(248,250,243,.35));}50%{filter:drop-shadow(0 0 46px rgba(248,250,243,.65));}}
+
+  .flag-wrap{width:min(62vw,300px);margin:0 auto 26px;opacity:0;transform:translateY(30px) scale(.94);
+    animation:heroIn 1s var(--ease) forwards 1.7s;filter:drop-shadow(0 22px 40px rgba(0,0,0,.55));}
+  @keyframes heroIn{to{opacity:1;transform:translateY(0) scale(1);}}
+  #flagSvg{width:100%;height:auto;border-radius:4px;}
+
+  .eyebrow{opacity:0;font-size:.78rem;letter-spacing:.4em;text-transform:uppercase;color:var(--white-dim);
+    animation:heroIn .9s var(--ease) forwards 2s;}
+
+  .headline{margin:14px 0 10px;font-size:clamp(2.1rem,8.6vw,6.4rem);line-height:1.02;color:var(--white);
+    text-shadow:0 0 40px rgba(47,213,113,.35);}
+  .headline .word{display:inline-block;overflow:hidden;vertical-align:top;}
+  .headline .letter{display:inline-block;transform:translateY(115%);animation:letterIn .8s var(--ease) forwards;}
+  @keyframes letterIn{to{transform:translateY(0);}}
+  .headline .gold-word{background:linear-gradient(120deg,#f4e2a0,var(--gold) 45%,#f4e2a0);-webkit-background-clip:text;
+    background-clip:text;color:transparent;}
+
+  .subhead{opacity:0;max-width:560px;margin:6px auto 34px;color:var(--white-dim);font-size:clamp(.95rem,2vw,1.1rem);
+    animation:heroIn .9s var(--ease) forwards 2.6s;}
+
+  .hero-ctas{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;opacity:0;animation:heroIn .9s var(--ease) forwards 2.85s;}
+
+  .scroll-cue{position:absolute;bottom:26px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;
+    align-items:center;gap:6px;opacity:0;animation:heroIn 1s var(--ease) forwards 3.2s;}
+  .scroll-cue span{font-size:.65rem;letter-spacing:.3em;text-transform:uppercase;color:var(--white-dim);}
+  .scroll-cue .chevron{width:14px;height:14px;border-right:1.5px solid var(--gold);border-bottom:1.5px solid var(--gold);
+    transform:rotate(45deg);animation:bounce 1.8s ease-in-out infinite;}
+  @keyframes bounce{0%,100%{transform:rotate(45deg) translate(0,0);opacity:.5;}50%{transform:rotate(45deg) translate(4px,4px);opacity:1;}}
+
+  .skyline{position:absolute;bottom:0;left:0;width:100%;opacity:.55;z-index:1;pointer-events:none;}
+
+  /* ===== popup ===== */
+  #popupOverlay{position:fixed;inset:0;z-index:8000;display:flex;align-items:center;justify-content:center;
+    padding:24px;background:rgba(2,10,6,.55);backdrop-filter:blur(4px);opacity:0;visibility:hidden;
+    transition:opacity .5s var(--ease),visibility .5s var(--ease);}
+  #popupOverlay.show{opacity:1;visibility:visible;}
+  .glass-card{position:relative;max-width:440px;width:100%;padding:44px 34px 36px;border-radius:22px;text-align:center;
+    background:linear-gradient(160deg,rgba(248,250,243,.14),rgba(10,82,40,.22));
+    border:1px solid rgba(248,250,243,.25);box-shadow:0 30px 70px -20px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.15);
+    backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+    transform:translateY(24px) scale(.96);transition:transform .5s var(--ease);}
+  #popupOverlay.show .glass-card{transform:translateY(0) scale(1);}
+  .glass-card .moon-icon{font-size:2.2rem;margin-bottom:10px;filter:drop-shadow(0 0 12px rgba(217,178,76,.6));}
+  .glass-card h3{font-size:clamp(1.3rem,4vw,1.7rem);margin-bottom:14px;}
+  .glass-card p{color:var(--white-dim);font-size:.95rem;margin-bottom:26px;}
+  #popupClose{position:absolute;top:14px;right:16px;background:none;border:none;color:var(--white-dim);font-size:1.3rem;
+    cursor:pointer;width:34px;height:34px;border-radius:50%;transition:.3s var(--ease);}
+  #popupClose:hover{background:rgba(248,250,243,.12);color:var(--white);transform:rotate(90deg);}
+
+  /* ===== reveal ===== */
+  .reveal{opacity:0;transform:translateY(46px);transition:opacity .9s var(--ease),transform .9s var(--ease);}
+  .reveal.in-view{opacity:1;transform:translateY(0);}
+  .reveal-delay-1.in-view{transition-delay:.12s;}
+  .reveal-delay-2.in-view{transition-delay:.24s;}
+  .reveal-delay-3.in-view{transition-delay:.36s;}
+
+  /* ===== story section ===== */
+  #story{background:var(--white);color:var(--ink);padding:110px 20px;}
+  .section-inner{max-width:1080px;margin:0 auto;}
+  .section-head{text-align:center;max-width:620px;margin:0 auto 56px;}
+  .section-head .kicker{display:block;font-size:.75rem;letter-spacing:.35em;text-transform:uppercase;color:var(--green-700);
+    margin-bottom:14px;}
+  .section-head h2{font-size:clamp(1.9rem,4.4vw,3rem);color:var(--green-900);}
+  .section-head p{margin-top:16px;color:#3d4a41;font-size:1rem;}
+
+  .stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:22px;}
+  .stat-card{background:linear-gradient(165deg,#fff,#f1f7f1);border:1px solid rgba(1,65,28,.1);border-radius:18px;
+    padding:30px 20px;text-align:center;transition:transform .4s var(--ease),box-shadow .4s var(--ease);}
+  .stat-card:hover{transform:translateY(-8px);box-shadow:0 24px 45px -20px rgba(1,65,28,.35);}
+  .stat-num{font-family:var(--font-d);font-size:clamp(2rem,4.6vw,2.6rem);color:var(--green-800);font-weight:800;}
+  .stat-label{margin-top:8px;font-size:.82rem;letter-spacing:.03em;color:#54604f;}
+
+  /* ===== monuments ===== */
+  #monuments{background:linear-gradient(180deg,#01150a,#02200f 45%,#01150a);padding:110px 20px;}
+  #monuments .section-head .kicker{color:var(--gold);}
+  #monuments .section-head h2{color:var(--white);}
+  #monuments .section-head p{color:var(--white-dim);}
+  .monument-grid{display:grid;grid-template-columns:1fr 1fr;gap:28px;}
+  .m-card{position:relative;border-radius:22px;overflow:hidden;padding:34px 26px 30px;text-align:center;
+    background:linear-gradient(165deg,rgba(248,250,243,.06),rgba(10,82,40,.18));
+    border:1px solid rgba(248,250,243,.14);perspective:900px;transition:transform .5s var(--ease),box-shadow .5s var(--ease),border-color .5s var(--ease);}
+  .m-card:hover{transform:translateY(-10px) rotateX(3deg);box-shadow:0 30px 60px -18px rgba(0,0,0,.55);border-color:rgba(217,178,76,.4);}
+  .m-card svg{width:100%;max-width:230px;margin:0 auto 20px;height:auto;}
+  .m-card h3{font-size:1.15rem;margin-bottom:8px;color:var(--white);}
+  .m-card p{font-size:.86rem;color:var(--white-dim);}
+
+  /* ===== finale ===== */
+  #finale{min-height:88svh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
+    padding:100px 20px;background:radial-gradient(ellipse 60% 60% at 50% 40%,rgba(47,213,113,.16),transparent 65%),#020b06;
+    overflow:hidden;}
+  .finale-crescent{font-size:2rem;margin-bottom:18px;filter:drop-shadow(0 0 14px rgba(217,178,76,.6));}
+  #finale h2{font-size:clamp(2.4rem,9vw,6rem);line-height:1.03;color:var(--white);
+    text-shadow:0 0 60px rgba(47,213,113,.25);}
+  #finale h2 .shine{
+    background:linear-gradient(120deg,#fff,#dff5e6 30%,var(--green-glow) 55%,#fff 80%);
+    background-size:220% auto;-webkit-background-clip:text;background-clip:text;color:transparent;
+    animation:shine 5s linear infinite;}
+  #finale h2 .flag-mark{display:inline-block;filter:drop-shadow(0 0 10px rgba(217,178,76,.5));}
+  @keyframes shine{to{background-position:220% center;}}
+  #finale .tagline{margin-top:18px;color:var(--white-dim);font-size:clamp(.95rem,2vw,1.1rem);max-width:480px;}
+  #finale .hero-ctas{margin-top:38px;}
+
+  footer{background:#010e07;padding:34px 20px;text-align:center;color:var(--white-dim);font-size:.82rem;letter-spacing:.02em;}
+  footer .heart{color:var(--green-glow);}
+
+  @media(max-width:860px){
+    .stat-grid{grid-template-columns:1fr 1fr;}
+    .monument-grid{grid-template-columns:1fr;}
+  }
+  @media(max-width:720px){
+    nav ul{position:fixed;top:0;right:0;height:100svh;width:min(78vw,320px);flex-direction:column;
+      background:rgba(2,15,8,.97);backdrop-filter:blur(18px);padding:110px 34px;gap:26px;
+      transform:translateX(100%);transition:transform .5s var(--ease);z-index:550;}
+    nav ul.open{transform:translateX(0);}
+    #navToggle{display:flex;}
+    #navToggle.open span:nth-child(1){transform:translateY(7px) rotate(45deg);}
+    #navToggle.open span:nth-child(2){opacity:0;}
+    #navToggle.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg);}
+  }
+  @media(max-width:520px){
+    .stat-grid{grid-template-columns:1fr 1fr;gap:14px;}
+    .stat-card{padding:22px 12px;}
+    .hero-ctas{flex-direction:column;width:100%;}
+    .hero-ctas .btn{width:100%;justify-content:center;}
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;scroll-behavior:auto !important;}
+  }
+</style>
+</head>
+<body>
+  <noscript><style>#preloader{display:none;}.reveal{opacity:1 !important;transform:none !important;}</style></noscript>
+
+  <div id="preloader">
+    <div class="pre-flag"><div class="fill"></div></div>
+    <div class="pre-label">Pakistan · 14 August</div>
+  </div>
+
+  <canvas id="ambientCanvas"></canvas>
+  <canvas id="confettiCanvas"></canvas>
+
+  <header id="siteHeader">
+    <div class="brand"><span class="star">★</span>14 AUGUST</div>
+    <button id="navToggle" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+    <nav>
+      <ul id="navLinks">
+        <li><a href="#hero" class="nav-link">Home</a></li>
+        <li><a href="#story" class="nav-link">Story</a></li>
+        <li><a href="#monuments" class="nav-link">Monuments</a></li>
+        <li><a href="#finale" class="nav-link">Celebrate</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- ================= HERO ================= -->
+  <section id="hero">
+    <svg class="sky-moon" viewBox="0 0 100 100">
+      <defs>
+        <mask id="crescentMask">
+          <circle cx="46" cy="50" r="26" fill="#fff"/>
+          <circle cx="57" cy="41" r="21" fill="#000"/>
+        </mask>
+      </defs>
+      <circle cx="46" cy="50" r="26" fill="#f8faf3" mask="url(#crescentMask)"/>
+      <polygon points="0,-11 2.5,-3.4 10.5,-3.4 4,1.3 6.5,9 0,4.2 -6.5,9 -4,1.3 -10.5,-3.4 -2.5,-3.4"
+        fill="#f8faf3" transform="translate(64,50)"/>
+    </svg>
+
+    <svg class="skyline" viewBox="0 0 1200 260" preserveAspectRatio="xMidYMax slice">
+      <!-- Minar-e-Pakistan silhouette -->
+      <g fill="#01100a">
+        <polygon points="230,260 260,260 300,175 190,175"/>
+        <rect x="234" y="90" width="52" height="90" rx="4"/>
+        <polygon points="234,90 286,90 278,72 242,72"/>
+        <rect x="248" y="46" width="24" height="30" rx="3"/>
+        <polygon points="248,46 272,46 260,24"/>
+        <rect x="257" y="10" width="6" height="16"/>
+        <circle cx="260" cy="8" r="4"/>
+      </g>
+      <!-- Faisal Mosque silhouette -->
+      <g fill="#01100a">
+        <polygon points="850,260 1080,260 1010,150 920,150"/>
+        <rect x="905" y="60" width="10" height="140"/>
+        <polygon points="905,60 915,60 910,42"/>
+        <rect x="1005" y="60" width="10" height="140"/>
+        <polygon points="1005,60 1015,60 1010,42"/>
+        <rect x="850" y="90" width="9" height="112"/>
+        <polygon points="850,90 859,90 854.5,74"/>
+        <rect x="1071" y="90" width="9" height="112"/>
+        <polygon points="1071,90 1080,90 1075.5,74"/>
+      </g>
+    </svg>
+
+    <div class="eyebrow">Islamic Republic of Pakistan</div>
+
+    <div class="flag-wrap">
+      <svg id="flagSvg" viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <filter id="waveFilter" x="-20%" y="-20%" width="140%" height="140%">
+            <feTurbulence id="turb" type="fractalNoise" baseFrequency="0.014 0.05" numOctaves="2" seed="4" result="noise"/>
+            <feDisplacementMap in="SourceGraphic" in2="noise" scale="12" xChannelSelector="R" yChannelSelector="G"/>
+          </filter>
+          <linearGradient id="shade" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#000" stop-opacity=".12"/>
+            <stop offset="1" stop-color="#fff" stop-opacity=".06"/>
+          </linearGradient>
+        </defs>
+        <g filter="url(#waveFilter)">
+          <rect x="0" y="0" width="300" height="200" fill="#0a5228"/>
+          <rect x="0" y="0" width="75" height="200" fill="#f8faf3"/>
+          <circle cx="188" cy="100" r="42" fill="#f8faf3"/>
+          <circle cx="201" cy="91" r="34" fill="#0a5228"/>
+          <polygon points="0,-14 3.18,-4.37 13.31,-4.33 5.14,1.67 8.23,11.33 0,5.4 -8.23,11.33 -5.14,1.67 -13.31,-4.33 -3.18,-4.37"
+            fill="#f8faf3" transform="translate(214,96) scale(1.05)"/>
+          <rect x="0" y="0" width="300" height="200" fill="url(#shade)"/>
+        </g>
+      </svg>
+    </div>
+
+    <h1 class="headline" id="headlineText"></h1>
+    <p class="subhead">79 years of Azadi — celebrating the courage, sacrifice and spirit that gave us a homeland to call our own.</p>
+
+    <div class="hero-ctas">
+      <button class="btn" id="celebrateBtn">🎉 Celebrate</button>
+      <a href="#story" class="btn ghost">Our Story</a>
+    </div>
+
+    <div class="scroll-cue"><span>Scroll</span><div class="chevron"></div></div>
+  </section>
+
+  <!-- ================= POPUP ================= -->
+  <div id="popupOverlay">
+    <div class="glass-card">
+      <button id="popupClose" aria-label="Close">✕</button>
+      <div class="moon-icon">🌙✨</div>
+      <h3>Independence Day Mubarak</h3>
+      <p>On this Independence Day, we remember the courage of our founders and celebrate the spirit of a free Pakistan. May our beloved homeland shine forever — proud, united and unstoppable.</p>
+      <button class="btn" id="popupCelebrateBtn">🎊 Celebrate With Us</button>
+    </div>
+  </div>
+
+  <!-- ================= STORY ================= -->
+  <section id="story">
+    <div class="section-inner">
+      <div class="section-head reveal">
+        <span class="kicker">Our Story</span>
+        <h2>A Nation Born of Resolve</h2>
+        <p>On the 27th of Ramzan, 14 August 1947, Pakistan emerged on the map of the world — the largest planned migration in history and a dream turned into a homeland.</p>
+      </div>
+      <div class="stat-grid">
+        <div class="stat-card reveal reveal-delay-1">
+          <div class="stat-num" data-count="1947">0</div>
+          <div class="stat-label">Year of Independence</div>
+        </div>
+        <div class="stat-card reveal reveal-delay-2">
+          <div class="stat-num" data-count="79">0</div>
+          <div class="stat-label">Years of Azadi</div>
+        </div>
+        <div class="stat-card reveal reveal-delay-3">
+          <div class="stat-num">14 Aug</div>
+          <div class="stat-label">Independence Day</div>
+        </div>
+        <div class="stat-card reveal reveal-delay-3">
+          <div class="stat-num">💚🤍</div>
+          <div class="stat-label">Majority &amp; Minorities, in Peace</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= MONUMENTS ================= -->
+  <section id="monuments">
+    <div class="section-inner">
+      <div class="section-head reveal">
+        <span class="kicker">Landmarks</span>
+        <h2>Monuments of Pride</h2>
+        <p>Two icons that stand tall as symbols of faith, freedom and national identity.</p>
+      </div>
+      <div class="monument-grid">
+        <div class="m-card reveal reveal-delay-1">
+          <svg viewBox="0 0 220 300">
+            <g fill="#eaf5ea">
+              <polygon points="30,300 190,300 190,286 30,286"/>
+              <polygon points="45,286 175,286 155,255 65,255"/>
+              <polygon points="60,255 160,255 148,225 72,225"/>
+              <rect x="86" y="118" width="48" height="107" rx="6"/>
+              <rect x="86" y="150" width="48" height="9" fill="#0a5228"/>
+              <rect x="86" y="185" width="48" height="9" fill="#0a5228"/>
+              <polygon points="80,118 140,118 128,96 92,96"/>
+              <rect x="96" y="66" width="28" height="32" rx="4"/>
+              <polygon points="96,66 124,66 110,38"/>
+              <rect x="107" y="14" width="6" height="26"/>
+              <circle cx="110" cy="12" r="5"/>
+            </g>
+          </svg>
+          <h3>Minar-e-Pakistan</h3>
+          <p>Lahore's soaring monument marking the site of the 1940 Pakistan Resolution.</p>
+        </div>
+        <div class="m-card reveal reveal-delay-2">
+          <svg viewBox="0 0 320 240">
+            <g fill="#eaf5ea">
+              <polygon points="60,235 260,235 190,120 130,120"/>
+              <rect x="140" y="60" width="16" height="160" rx="3" opacity=".5"/>
+              <polygon points="140,60 156,60 148,34"/>
+              <rect x="164" y="60" width="16" height="160" rx="3"/>
+              <polygon points="164,60 180,60 172,34"/>
+              <rect x="82" y="96" width="13" height="124" rx="3"/>
+              <polygon points="82,96 95,96 88.5,74"/>
+              <rect x="225" y="96" width="13" height="124" rx="3"/>
+              <polygon points="225,96 238,96 231.5,74"/>
+            </g>
+          </svg>
+          <h3>Faisal Mosque</h3>
+          <p>Islamabad's landmark mosque, its tent-like silhouette inspired by a Bedouin desert tent.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= FINALE ================= -->
+  <section id="finale">
+    <div class="finale-crescent reveal">🌙 ★</div>
+    <h2 class="reveal"><span class="shine">PAKISTAN<br>ZINDABAD</span></h2>
+    <p class="tagline reveal reveal-delay-1">Pak sarzameen shad baad — long live the land of the pure.</p>
+    <div class="hero-ctas reveal reveal-delay-2">
+      <button class="btn" id="finaleCelebrateBtn">🎆 Light Up the Sky</button>
+    </div>
+  </section>
+
+  <footer>
+    <p>Made with FA Pixels <span class="heart">💚</span> for Pakistan · 14 August 1947 — Forever Free</p>
+  </footer>
+
+<script>
+(function(){
+  "use strict";
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- preloader ---------- */
+  window.addEventListener('load', function(){
+    setTimeout(function(){
+      document.getElementById('preloader').classList.add('hide');
+    }, 1200);
+  });
+
+  /* ---------- headline letter animation ---------- */
+  // Split into user-perceived characters (graphemes), not UTF-16 code units —
+  // a plain .split('') breaks multi-codepoint emoji (like the 🇵🇰 flag, which is
+  // two surrogate-pair codepoints) into lone surrogates that render as broken tofu.
+  function splitGraphemes(str){
+    if(typeof Intl !== 'undefined' && Intl.Segmenter){
+      var seg = new Intl.Segmenter('en', {granularity:'grapheme'});
+      return Array.from(seg.segment(str), function(s){ return s.segment; });
+    }
+    return Array.from(str); // codepoint-aware fallback (still correct for surrogate pairs)
+  }
+
+  var headline = document.getElementById('headlineText');
+  var text = "14 AUGUST MUBARAK";
+  var words = text.split(' ');
+  var globalIndex = 0;
+  words.forEach(function(word, wi){
+    var wordSpan = document.createElement('span');
+    wordSpan.className = 'word';
+    splitGraphemes(word).forEach(function(ch){
+      var letterSpan = document.createElement('span');
+      letterSpan.className = 'letter';
+      if(wi === 1) letterSpan.classList.add('gold-word');
+      letterSpan.style.animationDelay = (1.9 + globalIndex * 0.045) + 's';
+      letterSpan.textContent = ch === ' ' ? '\u00A0' : ch;
+      wordSpan.appendChild(letterSpan);
+      globalIndex++;
+    });
+    headline.appendChild(wordSpan);
+    if(wi < words.length - 1) headline.appendChild(document.createTextNode('\u00A0'));
+  });
+
+  /* ---------- reliable navigation ---------- */
+  var header = document.getElementById('siteHeader');
+  var navToggle = document.getElementById('navToggle');
+  var navLinks = document.getElementById('navLinks');
+
+  function closeMenu(){
+    navToggle.classList.remove('open');
+    navLinks.classList.remove('open');
+    document.body.classList.remove('menu-open');
+  }
+
+  window.addEventListener('scroll', function(){
+    header.classList.toggle('scrolled', window.scrollY > 40);
+  }, {passive:true});
+
+  navToggle.addEventListener('click', function(e){
+    e.preventDefault(); e.stopPropagation();
+    var open = !navLinks.classList.contains('open');
+    navLinks.classList.toggle('open', open);
+    navToggle.classList.toggle('open', open);
+    document.body.classList.toggle('menu-open', open);
+  });
+
+  document.querySelectorAll('.nav-link').forEach(function(link){
+    link.addEventListener('click', function(e){
+      e.preventDefault();
+      var selector = link.getAttribute('href');
+      var target = document.querySelector(selector);
+      if(!target) return;
+      closeMenu();
+      if(popup) popup.classList.remove('show');
+      target.scrollIntoView({behavior: reduceMotion ? 'auto' : 'smooth', block:'start'});
+    });
+  });
+
+  document.addEventListener('click', function(e){
+    if(window.innerWidth <= 720 && navLinks.classList.contains('open') &&
+       !navLinks.contains(e.target) && !navToggle.contains(e.target)) closeMenu();
+  });
+
+  /* ---------- flag ripple ---------- */
+  var turb = document.getElementById('turb');
+  if(turb && !reduceMotion){
+    var t = 0;
+    function animateFlag(){
+      t += 0.016;
+      var fx = 0.014 + Math.sin(t*0.6)*0.004;
+      var fy = 0.045 + Math.cos(t*0.5)*0.008;
+      turb.setAttribute('baseFrequency', fx.toFixed(4) + ' ' + fy.toFixed(4));
+      requestAnimationFrame(animateFlag);
+    }
+    requestAnimationFrame(animateFlag);
+  }
+
+  /* ---------- scroll reveal ---------- */
+  var revealEls = document.querySelectorAll('.reveal');
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      if(entry.isIntersecting){
+        entry.target.classList.add('in-view');
+        io.unobserve(entry.target);
+      }
+    });
+  }, {threshold:0.18});
+  revealEls.forEach(function(el){ io.observe(el); });
+
+  /* ---------- counters ---------- */
+  var counters = document.querySelectorAll('[data-count]');
+  var counterIo = new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      if(entry.isIntersecting){
+        var el = entry.target;
+        var target = parseInt(el.getAttribute('data-count'), 10);
+        var dur = 1400, start = null;
+        function step(ts){
+          if(!start) start = ts;
+          var progress = Math.min((ts - start) / dur, 1);
+          el.textContent = Math.floor(progress * target);
+          if(progress < 1) requestAnimationFrame(step); else el.textContent = target;
+        }
+        requestAnimationFrame(step);
+        counterIo.unobserve(el);
+      }
+    });
+  }, {threshold:0.5});
+  counters.forEach(function(el){ counterIo.observe(el); });
+
+  /* ---------- popup ---------- */
+  var popup = document.getElementById('popupOverlay');
+  var popupClose = document.getElementById('popupClose');
+  setTimeout(function(){ popup.classList.add('show'); }, 3600);
+  function closePopup(){ popup.classList.remove('show'); }
+  popupClose.addEventListener('click', closePopup);
+  popup.addEventListener('click', function(e){ if(e.target === popup) closePopup(); });
+  document.getElementById('popupCelebrateBtn').addEventListener('click', function(){
+    closePopup();
+    burstConfetti();
+  });
+
+  /* ---------- sound disabled ---------- */
+  // Background music and firework sound have been removed.
+  /* =========================================================
+     AMBIENT CANVAS — floating particles, twinkling stars, mini fireworks
+  ========================================================== */
+  var ac = document.getElementById('ambientCanvas');
+  var actx = ac.getContext('2d');
+  var W, H, DPR = Math.min(window.devicePixelRatio || 1, 2);
+
+  function resizeAmbient(){
+    W = window.innerWidth; H = window.innerHeight;
+    ac.width = W * DPR; ac.height = H * DPR;
+    ac.style.width = W + 'px'; ac.style.height = H + 'px';
+    actx.setTransform(DPR,0,0,DPR,0,0);
+  }
+  resizeAmbient();
+  window.addEventListener('resize', resizeAmbient);
+
+  var colors = ['#f8faf3', '#2fd571', '#d9b24c'];
+  var particleCount = reduceMotion ? 0 : (W < 700 ? 40 : 80);
+  var particles = [];
+  for(var i=0;i<particleCount;i++){
+    particles.push({
+      x: Math.random()*W, y: Math.random()*H,
+      r: Math.random()*1.8 + 0.6,
+      vy: -(Math.random()*0.35 + 0.08),
+      vx: (Math.random()-0.5)*0.25,
+      alpha: Math.random()*0.5 + 0.25,
+      twinkleSpeed: Math.random()*0.02 + 0.005,
+      phase: Math.random()*Math.PI*2,
+      color: colors[Math.floor(Math.random()*colors.length)]
+    });
+  }
+
+  var minis = []; // mini firework particles
+  function spawnMiniFirework(){
+    if(reduceMotion) return;
+    var x = Math.random()*W;
+    var y = Math.random()*H*0.55 + 20;
+    var count = 16;
+    var hue = colors[Math.floor(Math.random()*colors.length)];
+    for(var k=0;k<count;k++){
+      var angle = (Math.PI*2/count)*k;
+      var speed = Math.random()*1.4 + 0.6;
+      minis.push({
+        x:x, y:y,
+        vx:Math.cos(angle)*speed, vy:Math.sin(angle)*speed,
+        life:1, decay: Math.random()*0.012 + 0.012,
+        color:hue, size: Math.random()*1.6+1
+      });
+    }
+  }
+  var lastMini = 0;
+
+  function ambientLoop(ts){
+    actx.clearRect(0,0,W,H);
+
+    particles.forEach(function(p){
+      p.phase += p.twinkleSpeed;
+      p.x += p.vx; p.y += p.vy;
+      if(p.y < -10) p.y = H + 10;
+      if(p.x < -10) p.x = W + 10;
+      if(p.x > W+10) p.x = -10;
+      var a = p.alpha * (0.5 + 0.5*Math.sin(p.phase));
+      actx.beginPath();
+      actx.fillStyle = p.color;
+      actx.globalAlpha = a;
+      actx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+      actx.fill();
+    });
+    actx.globalAlpha = 1;
+
+    if(!reduceMotion && ts - lastMini > 2600 + Math.random()*2600){
+      lastMini = ts;
+      spawnMiniFirework();
+    }
+    for(var i=minis.length-1;i>=0;i--){
+      var m = minis[i];
+      m.x += m.vx; m.y += m.vy;
+      m.vy += 0.01;
+      m.life -= m.decay;
+      if(m.life <= 0){ minis.splice(i,1); continue; }
+      actx.beginPath();
+      actx.fillStyle = m.color;
+      actx.globalAlpha = Math.max(m.life,0);
+      actx.arc(m.x, m.y, m.size, 0, Math.PI*2);
+      actx.fill();
+    }
+    actx.globalAlpha = 1;
+
+    requestAnimationFrame(ambientLoop);
+  }
+  requestAnimationFrame(ambientLoop);
+
+  /* ---------- celebration-only sound effects ---------- */
+  var celebrationAudioCtx = null;
+
+  function celebrationAudioReady(){
+    if(!celebrationAudioCtx){
+      celebrationAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if(celebrationAudioCtx.state === 'suspended') celebrationAudioCtx.resume();
+    return celebrationAudioCtx;
+  }
+
+  function playCelebrationSound(){
+    var ctx = celebrationAudioReady();
+    var now = ctx.currentTime;
+
+    // Short rising "whoosh"
+    var osc = ctx.createOscillator();
+    var gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(180, now);
+    osc.frequency.exponentialRampToValueAtTime(900, now + 0.28);
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(0.12, now + 0.04);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.34);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.36);
+
+    // Bright celebration chime
+    [523.25, 659.25, 783.99].forEach(function(freq, i){
+      var o = ctx.createOscillator();
+      var g = ctx.createGain();
+      var t = now + 0.16 + i * 0.09;
+      o.type = 'triangle';
+      o.frequency.setValueAtTime(freq, t);
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.07, t + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.30);
+      o.connect(g);
+      g.connect(ctx.destination);
+      o.start(t);
+      o.stop(t + 0.32);
+    });
+
+    // Firework-style pop
+    var buffer = ctx.createBuffer(1, ctx.sampleRate * 0.22, ctx.sampleRate);
+    var data = buffer.getChannelData(0);
+    for(var i = 0; i < data.length; i++){
+      data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / data.length, 2.4);
+    }
+    var source = ctx.createBufferSource();
+    var filter = ctx.createBiquadFilter();
+    var popGain = ctx.createGain();
+    source.buffer = buffer;
+    filter.type = 'lowpass';
+    filter.frequency.value = 1800;
+    popGain.gain.setValueAtTime(0.0001, now + 0.34);
+    popGain.gain.exponentialRampToValueAtTime(0.16, now + 0.36);
+    popGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.58);
+    source.connect(filter);
+    filter.connect(popGain);
+    popGain.connect(ctx.destination);
+    source.start(now + 0.34);
+  }
+
+  /* =========================================================
+     CONFETTI CANVAS — triggered by Celebrate buttons
+  ========================================================== */
+  var cc = document.getElementById('confettiCanvas');
+  var cctx = cc.getContext('2d');
+  function resizeConfetti(){
+    cc.width = window.innerWidth * DPR; cc.height = window.innerHeight * DPR;
+    cc.style.width = window.innerWidth + 'px'; cc.style.height = window.innerHeight + 'px';
+    cctx.setTransform(DPR,0,0,DPR,0,0);
+  }
+  resizeConfetti();
+  window.addEventListener('resize', resizeConfetti);
+
+  var confettiColors = ['#0a5228', '#f8faf3', '#d9b24c', '#2fd571', '#0e6b34'];
+  var confettiPieces = [];
+  var confettiRunning = false;
+
+  function burstConfetti(){
+    playCelebrationSound();
+    var cw = window.innerWidth, chh = window.innerHeight;
+    var count = reduceMotion ? 0 : (cw < 700 ? 90 : 160);
+    for(var i=0;i<count;i++){
+      confettiPieces.push({
+        x: cw/2 + (Math.random()-0.5)*cw*0.5,
+        y: chh*0.35,
+        vx: (Math.random()-0.5)*9,
+        vy: Math.random()*-9 - 4,
+        size: Math.random()*7 + 4,
+        color: confettiColors[Math.floor(Math.random()*confettiColors.length)],
+        rot: Math.random()*Math.PI*2,
+        rotSpeed: (Math.random()-0.5)*0.3,
+        shape: Math.random() > 0.5 ? 'rect' : 'circle',
+        gravity: 0.18 + Math.random()*0.08,
+        drag: 0.992
+      });
+    }
+    // also add a couple of firework-style bursts from the sides
+    if(!reduceMotion){
+      spawnFireworkBurst(cw*0.2, chh*0.3);
+      spawnFireworkBurst(cw*0.8, chh*0.25);
+    }
+    if(!confettiRunning){ confettiRunning = true; requestAnimationFrame(confettiLoop); }
+  }
+
+  var fireworkParticles = [];
+  function spawnFireworkBurst(x,y){
+    var count = 36;
+    var color = confettiColors[Math.floor(Math.random()*confettiColors.length)];
+    for(var k=0;k<count;k++){
+      var angle = (Math.PI*2/count)*k + Math.random()*0.2;
+      var speed = Math.random()*3.2 + 1.6;
+      fireworkParticles.push({
+        x:x, y:y, vx:Math.cos(angle)*speed, vy:Math.sin(angle)*speed,
+        life:1, decay:Math.random()*0.01+0.012, color:color, size:Math.random()*2+1.4
+      });
+    }
+  }
+
+  function confettiLoop(){
+    cctx.clearRect(0,0,window.innerWidth, window.innerHeight);
+    var active = false;
+
+    for(var i=confettiPieces.length-1;i>=0;i--){
+      var p = confettiPieces[i];
+      p.vy += p.gravity;
+      p.vx *= p.drag; p.vy *= p.drag;
+      p.x += p.vx; p.y += p.vy;
+      p.rot += p.rotSpeed;
+      if(p.y > window.innerHeight + 40){ confettiPieces.splice(i,1); continue; }
+      active = true;
+      cctx.save();
+      cctx.translate(p.x, p.y);
+      cctx.rotate(p.rot);
+      cctx.fillStyle = p.color;
+      if(p.shape === 'rect'){
+        cctx.fillRect(-p.size/2, -p.size/2*0.6, p.size, p.size*0.6);
+      } else {
+        cctx.beginPath();
+        cctx.arc(0,0,p.size/2,0,Math.PI*2);
+        cctx.fill();
+      }
+      cctx.restore();
+    }
+
+    for(var j=fireworkParticles.length-1;j>=0;j--){
+      var f = fireworkParticles[j];
+      f.x += f.vx; f.y += f.vy; f.vy += 0.02;
+      f.life -= f.decay;
+      if(f.life <= 0){ fireworkParticles.splice(j,1); continue; }
+      active = true;
+      cctx.beginPath();
+      cctx.globalAlpha = Math.max(f.life,0);
+      cctx.fillStyle = f.color;
+      cctx.arc(f.x, f.y, f.size, 0, Math.PI*2);
+      cctx.fill();
+      cctx.globalAlpha = 1;
+    }
+
+    if(active || confettiPieces.length || fireworkParticles.length){
+      requestAnimationFrame(confettiLoop);
+    } else {
+      confettiRunning = false;
+    }
+  }
+
+  ['celebrateBtn','finaleCelebrateBtn'].forEach(function(id){
+    var el = document.getElementById(id);
+    if(el) el.addEventListener('click', burstConfetti);
+  });
+
+  /* pause heavy loops when tab hidden */
+  document.addEventListener('visibilitychange', function(){
+    // loops self-check via rAF; browsers already throttle hidden tabs, no extra action needed
+  });
+
+})();
+</script>
+</body>
+</html>
